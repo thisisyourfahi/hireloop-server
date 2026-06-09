@@ -6,7 +6,7 @@ const port = 5555
 app.use(cors())
 app.use(express.json())
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 app.get('/', (req, res) => {
     res.send('hireloop server working')
@@ -33,6 +33,13 @@ async function run() {
         const companyCollection = db.collection('companies')
 
         // jobs related apis
+        // get a job by id
+        app.get('/api/jobs/:id', async (req, res) => {
+            const id = req.params.id
+            const result = await jobCollection.findOne({_id: new ObjectId(id)})
+            res.send(result)
+        })
+
         // get company jobs
         app.get('/api/jobs', async (req, res) => {
             const query = {};
@@ -46,15 +53,30 @@ async function run() {
         // post a job
         app.post('/api/jobs', async (req, res) => {
             const job = req.body
-            const result = await jobCollection.insertOne(job) 
+            const newJob = {
+                ...job,
+                createdAt: new Date()
+            }
+            const result = await jobCollection.insertOne(newJob) 
             res.send(result)
         })
 
         // company related apis
+        // get companies 
+        app.get('/api/companies', async (req, res) => {
+            const cursor = companyCollection.find()
+            const result = await cursor.toArray()
+            res.send(result);
+        })
+
         // create a company
         app.post('/api/companies', async (req, res) => {
             const company = req.body;
-            const result = await companyCollection.insertOne(company)
+            const newCompany = {
+                ...company,
+                createdAt: new Date()
+            }
+            const result = await companyCollection.insertOne(newCompany)
             res.send(result);
         })
 
@@ -65,7 +87,7 @@ async function run() {
                 query.recruiterId = req.query.recruiterId
             }
             const result = await companyCollection.findOne(query);
-            res.send(result);
+            res.send(result || {});
         })
 
         await client.db("admin").command({ ping: 1 });
