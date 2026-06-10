@@ -31,6 +31,28 @@ async function run() {
         const db = client.db('hireloop_db');
         const jobCollection = db.collection('jobs')
         const companyCollection = db.collection('companies')
+        const usersCollection = db.collection('user');
+        const applicationCollection = db.collection('applications');
+
+        // application related apis
+        // pos an application
+        app.post('/api/applications', async (req, res) => {
+            const application = req.body
+            const newApplication = {
+                ...application,
+                createdAt: new Date()
+            }
+            const result = await applicationCollection.insertOne(newApplication)
+            res.send(result);
+        })
+
+        // user related apis
+        // get all users 
+        app.get('/api/users', async (req, res) => {
+            const cursor = usersCollection.find()
+            const result = await cursor.toArray()
+            res.send(result)
+        })
 
         // jobs related apis
         // get a job by id
