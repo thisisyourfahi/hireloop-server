@@ -33,6 +33,40 @@ async function run() {
         const companyCollection = db.collection('companies')
         const usersCollection = db.collection('user');
         const applicationCollection = db.collection('applications');
+        const plansCollection = db.collection('plans');
+        const subscriptionCollection = db.collection('subscriptions');
+
+        // subscriptions related apis
+        // add a subscription
+        app.post('/api/subscriptions', async (req, res) => {
+            const data = req.body
+            const subInfo = {
+                ...data, 
+                createdAt: new Date()
+            }
+            const result = await subscriptionCollection.insertOne(subInfo)
+
+            const filter = {email: data.email}
+            const updateDocument = {
+                $set: {
+                    plan: data.planId
+                }
+            }
+            const updateResult = await usersCollection.updateOne(filter, updateDocument);
+            res.send(updateResult)
+        })
+
+
+        // plans related apis
+        // get  plans
+        app.get('/api/plans', async (req, res) => {
+            const query = {}
+            if (req.query.plan_name) {
+                query.name = req.query.plan_name
+            }
+            const plan = await plansCollection.findOne(query)
+            res.send(plan);
+        })
 
         // application related apis
         // pos an application
@@ -59,10 +93,13 @@ async function run() {
         // user related apis
         // get all users 
         app.get('/api/users', async (req, res) => {
-            const cursor = usersCollection.find()
+            const query = {}
+            if (req.query.user_id) query._id = new ObjectId(req.query.user_id)
+            console.log(query);
+            const cursor = usersCollection.find(query)
             const result = await cursor.toArray()
             res.send(result)
-        })
+        })        
 
         // jobs related apis
         // get a job by id
