@@ -46,6 +46,16 @@ async function run() {
             res.send(result);
         })
 
+        // get application(s)
+        app.get('/api/applications', async (req, res) => {
+            const query = {}
+            if (req.query.applicantId) query.applicantId = req.query.applicantId
+            if (req.query.jobId) query.jobId = req.query.jobId
+            const cursor = applicationCollection.find(query)
+            const result = await cursor.toArray()
+            res.send(result)
+        })
+
         // user related apis
         // get all users 
         app.get('/api/users', async (req, res) => {
