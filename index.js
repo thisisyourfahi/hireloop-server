@@ -41,12 +41,12 @@ async function run() {
         app.post('/api/subscriptions', async (req, res) => {
             const data = req.body
             const subInfo = {
-                ...data, 
+                ...data,
                 createdAt: new Date()
             }
             const result = await subscriptionCollection.insertOne(subInfo)
 
-            const filter = {email: data.email}
+            const filter = { email: data.email }
             const updateDocument = {
                 $set: {
                     plan: data.planId
@@ -90,22 +90,35 @@ async function run() {
             res.send(result)
         })
 
+        // get a application
+        app.get('/api/application/:id', async (req, res) => {
+            const id = req.params.id
+            const result = await applicationCollection.findOne({_id: new ObjectId(id)})
+            res.send(result)
+        })
+
+        // delete application 
+        app.delete('/api/applications/delete/:id', async (req, res) => {
+            const id = req.params.id
+            const result = await applicationCollection.deleteOne({_id: new ObjectId(id)})
+            res.send(result);
+        })
+
         // user related apis
         // get all users 
         app.get('/api/users', async (req, res) => {
             const query = {}
             if (req.query.user_id) query._id = new ObjectId(req.query.user_id)
-            console.log(query);
             const cursor = usersCollection.find(query)
             const result = await cursor.toArray()
             res.send(result)
-        })        
+        })
 
         // jobs related apis
         // get a job by id
         app.get('/api/jobs/:id', async (req, res) => {
             const id = req.params.id
-            const result = await jobCollection.findOne({_id: new ObjectId(id)})
+            const result = await jobCollection.findOne({ _id: new ObjectId(id) })
             res.send(result)
         })
 
@@ -126,7 +139,7 @@ async function run() {
                 ...job,
                 createdAt: new Date()
             }
-            const result = await jobCollection.insertOne(newJob) 
+            const result = await jobCollection.insertOne(newJob)
             res.send(result)
         })
 
